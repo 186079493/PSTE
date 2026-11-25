@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PSTE uses multi-scale depth observations for high-speed quadrupedal parkour. Run the policy in simulation and watch the hardware trials.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f7f9fc">
+  <title>PSTE | High-Speed Quadrupedal Parkour</title>
+  <link rel="stylesheet" href="styles.css?v=aligned-content-width">
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" hidden>
+    <div class="wrap header-inner">
+      <a class="wordmark" href="#top" aria-label="PSTE, page top">PSTE</a>
+      <nav aria-label="Page sections">
+        <a href="#abstract">Abstract</a>
+        <a href="#method">Method</a>
+        <a href="#simulation">Simulation</a>
+        <a href="#demos">Videos</a>
+        <a href="#training-rewards">Rewards</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="title">
+      <div class="hero-banner">
+        <video id="title-video" class="hero-video" muted loop playsinline preload="none"
+               poster="assets/images/stair-ascent.webp" aria-label="PSTE background video">
+          <source src="assets/video/stair-ascent.mp4?v=720p" type="video/mp4">
+        </video>
+        <div class="wrap hero-title">
+          <h1 id="title">PSTE: High-Speed Quadrupedal Parkour with Multi-Scale Spatiotemporal Visual Encoding</h1>
+        </div>
+      </div>
+      <div class="actions wrap">
+        <a class="button paper-link" href="#demos">Videos</a>
+        <a class="button paper-link" href="#simulation">Simulation</a>
+      </div>
+    </section>
+
+    <section class="section wrap" id="abstract" aria-labelledby="abstract-title">
+      <div class="reading">
+        <h2 id="abstract-title">Abstract</h2>
+        <p>Quadrupedal robots can run rapidly on flat ground, yet sustaining high speeds on challenging terrain remains difficult: terrain changes demand accurate perception while increasing speed leaves less time to respond. We present PSTE, a reinforcement learning framework for quadrupedal parkour using a single onboard depth camera and multi-scale spatiotemporal visual encoding. A high-frequency reactive branch captures fine local geometry for rapid responses, while a lower-frequency memory branch integrates broader terrain information and its temporal history for anticipatory adjustments. To address the declining reliability of long-range depth measurements, we design a range-dependent depth degradation model to narrow the sim-to-real camera gap. With a training scheme for high-speed locomotion, PSTE sustains speeds above 3.5 m/s on real-world terrain, including continuous stairs, elevated platforms, and gaps, averaging above 4.5 m/s on the gap segment. The framework also demonstrates applicability across quadrupedal platforms.</p>
+      </div>
+    </section>
+
+    <section class="section wrap" id="method" aria-labelledby="method-title">
+      <div class="reading">
+        <h2 id="method-title">Method</h2>
+        <p>PSTE processes depth from one camera with two recurrent visual encoders. Residual fusion combines their terrain features, which the policy uses with estimated robot states and proprioception.</p>
+      </div>
+
+      <figure class="paper-figure">
+        <a href="assets/images/architecture.webp?v=paper-fig2" aria-label="Open the PSTE architecture diagram">
+          <img src="assets/images/architecture.webp?v=paper-fig2" alt="PSTE framework showing near and far visual encoders, residual fusion, and the actor and critic networks." width="1266" height="516" loading="lazy">
+        </a>
+        <figcaption>PSTE framework from the paper. Auxiliary decoders reconstruct height maps during training.</figcaption>
+      </figure>
+
+      <div class="method-branches">
+        <article>
+          <h3>Reactive branch</h3>
+          <p><strong>0.2–2 m at 50 Hz.</strong> Frequent updates capture nearby geometry for rapid motion adjustments.</p>
+        </article>
+        <article>
+          <h3>Memory branch</h3>
+          <p><strong>0.2–10 m at 10 Hz.</strong> Wider depth coverage and recurrent memory help the policy anticipate upcoming terrain.</p>
+        </article>
+      </div>
+
+    </section>
+
+    <section class="section wrap" id="simulation" aria-labelledby="simulation-title">
+      <div class="reading">
+        <h2 id="simulation-title">Interactive simulation</h2>
+        <p>The RobotA policy starts on mixed terrain when the simulator comes into view and returns to the start after each finish. The forward command is fixed at 4.5 m/s. Timing begins at the first obstacle, after the flat run-up. Drag to orbit the camera.</p>
+      </div>
+      <div class="sim" data-sim>
+        <div class="sim-toolbar">
+          <label for="terrain">Terrain
+            <select id="terrain">
+              <option value="stairs">Continuous stairs</option>
+              <option value="gaps">Gaps</option>
+              <option value="platform">Platforms</option>
+              <option value="mixed" selected>Mixed terrain</option>
+            </select>
+          </label>
+          <div class="sim-buttons">
+            <button type="button" class="button button-primary" data-play>Start simulation</button>
+            <button type="button" class="button" data-reset disabled>Reset</button>
+            <button type="button" class="button" data-view disabled>Change view</button>
+          </div>
+        </div>
+        <div class="sim-stage">
+          <div class="sim-viewport" data-viewport role="img" aria-label="Interactive three-dimensional view of the RobotA robot and course"></div>
+          <div class="sim-placeholder" data-placeholder><p>Preparing the mixed-terrain simulation…</p></div>
+        </div>
+        <dl class="sim-readout">
+          <div><dt>Forward command</dt><dd>4.5 m/s</dd></div>
+          <div><dt>Measured forward speed</dt><dd data-speed>—</dd></div>
+          <div><dt>Time after run-up</dt><dd data-time>—</dd></div>
+          <div><dt>Average speed after run-up</dt><dd data-average aria-live="polite">—</dd></div>
+        </dl>
+        <div class="sim-notes">
+          <p data-course>Continuous stairs, a 60 cm gap, and a 40 cm platform on one course.</p>
+          <p data-status role="status" aria-live="polite"></p>
+        </div>
+        <noscript><p class="sim-message">Enable JavaScript to run the simulation.</p></noscript>
+      </div>
+    </section>
+
+    <section class="section wrap" id="demos" aria-labelledby="demos-title">
+      <div class="reading">
+        <h2 id="demos-title">Hardware videos</h2>
+        <p>Videos loop while in view. Click or tap to replay from the start.</p>
+      </div>
+
+      <section class="video-group" aria-labelledby="video-group-1">
+        <h3 id="video-group-1">Outdoor terrain</h3>
+        <p>RobotA</p>
+        <div class="demo-grid">
+          <article class="demo-pair">
+            <h4>Continuous stair ascent</h4>
+            <p>15 cm risers and 30 cm treads</p>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/stair-ascent.webp" aria-label="Continuous stair ascent, Original · 1×">
+                  <source src="assets/video/stair-ascent.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/stair-ascent.mp4?v=720p">Download continuous stair ascent video</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/stair-ascent.webp" aria-label="Continuous stair ascent, Slow motion · 0.4×">
+                  <source src="assets/video/stair-ascent-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/stair-ascent-slow.mp4?v=720p">Download continuous stair ascent video</a>
+                </video>
+              </figure>
+            </div>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-a-stair-ascent.webp" aria-label="RobotA stair ascent · 1.28 s, Original · 1×">
+                  <source src="assets/video/robot-a-stair-ascent.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-a-stair-ascent.mp4?v=720p">Download RobotA stair ascent · 1.28 s video (Original · 1×)</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-a-stair-ascent.webp" aria-label="RobotA stair ascent · 1.28 s, Slow motion · 0.4×">
+                  <source src="assets/video/robot-a-stair-ascent-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-a-stair-ascent-slow.mp4?v=720p">Download RobotA stair ascent · 1.28 s video (Slow motion · 0.4×)</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+          <article class="demo-pair">
+            <h4>Continuous stair descent</h4>
+            <p>View from the top of the stairs</p>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/step-descent.webp" aria-label="Continuous stair descent, Original · 1×">
+                  <source src="assets/video/step-descent.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/step-descent.mp4?v=720p">Download continuous stair descent video</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/step-descent.webp" aria-label="Continuous stair descent, Slow motion · 0.4×">
+                  <source src="assets/video/step-descent-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/step-descent-slow.mp4?v=720p">Download continuous stair descent video</a>
+                </video>
+              </figure>
+            </div>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-a-stair-descent.webp" aria-label="RobotA stair descent · 1.2 s, Original · 1×">
+                  <source src="assets/video/robot-a-stair-descent.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-a-stair-descent.mp4?v=720p">Download RobotA stair descent · 1.2 s video (Original · 1×)</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-a-stair-descent.webp" aria-label="RobotA stair descent · 1.2 s, Slow motion · 0.4×">
+                  <source src="assets/video/robot-a-stair-descent-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-a-stair-descent-slow.mp4?v=720p">Download RobotA stair descent · 1.2 s video (Slow motion · 0.4×)</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+          <article class="demo-pair">
+            <h4>40 cm platform climb</h4>
+            <p>Outdoor platform</p>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/platform-climb-retake.webp" aria-label="40 cm platform climb retake, Original · 1×">
+                  <source src="assets/video/platform-climb-retake.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/platform-climb-retake.mp4?v=720p">Download 40 cm platform climb retake (Original · 1×)</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/platform-climb-retake.webp" aria-label="40 cm platform climb retake, Slow motion · 0.4×">
+                  <source src="assets/video/platform-climb-retake-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/platform-climb-retake-slow.mp4?v=720p">Download 40 cm platform climb retake (Slow motion · 0.4×)</a>
+                </video>
+              </figure>
+            </div>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/platform-climb.webp" aria-label="40 cm platform climb, Original · 1×">
+                  <source src="assets/video/platform-climb.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/platform-climb.mp4?v=720p">Download 40 cm platform climb video</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/platform-climb.webp" aria-label="40 cm platform climb, Slow motion · 0.4×">
+                  <source src="assets/video/platform-climb-slow.mp4" type="video/mp4">
+                  <a href="assets/video/platform-climb-slow.mp4">Download 40 cm platform climb video</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+          <article class="demo-pair">
+            <h4>60 cm gap crossing</h4>
+            <p>Outdoor gap</p>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/gap-crossing.webp" aria-label="60 cm gap crossing, Original · 1×">
+                  <source src="assets/video/gap-crossing.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/gap-crossing.mp4?v=720p">Download 60 cm gap crossing video</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/gap-crossing.webp" aria-label="60 cm gap crossing, Slow motion · 0.4×">
+                  <source src="assets/video/gap-crossing-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/gap-crossing-slow.mp4?v=720p">Download 60 cm gap crossing video</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+          <article class="demo-pair">
+            <h4>30 cm outdoor step</h4>
+            <p>Step onto grass</p>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/step-climb.webp" aria-label="30 cm outdoor step, Original · 1×">
+                  <source src="assets/video/step-climb.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/step-climb.mp4?v=720p">Download 30 cm outdoor step video</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/step-climb.webp" aria-label="30 cm outdoor step, Slow motion · 0.4×">
+                  <source src="assets/video/step-climb-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/step-climb-slow.mp4?v=720p">Download 30 cm outdoor step video</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+          <article class="demo-pair">
+            <h4>High-speed flat-ground running</h4>
+            <p>Outdoor pavement</p>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/flat-run.webp" aria-label="High-speed flat-ground running, Original · 1×">
+                  <source src="assets/video/flat-run.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/flat-run.mp4?v=720p">Download high-speed flat-ground running video</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/flat-run.webp" aria-label="High-speed flat-ground running, Slow motion · 0.4×">
+                  <source src="assets/video/flat-run-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/flat-run-slow.mp4?v=720p">Download high-speed flat-ground running video</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="video-group" aria-labelledby="video-group-3">
+        <h3 id="video-group-3">Cross-platform deployment</h3>
+        <p>RobotB</p>
+        <div class="demo-grid">
+          <article class="demo-pair">
+            <h4>RobotB stair ascent</h4>
+            <p>Same perception framework with a locomotion policy retrained for RobotB dynamics</p>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-b-stair-ascent-wide.webp" aria-label="RobotB stair ascent, Original · 1×">
+                  <source src="assets/video/robot-b-stair-ascent-wide.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-b-stair-ascent-wide.mp4?v=720p">Download RobotB stair ascent video (Original · 1×)</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-b-stair-ascent-wide.webp" aria-label="RobotB stair ascent, Slow motion · 0.4×">
+                  <source src="assets/video/robot-b-stair-ascent-wide-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-b-stair-ascent-wide-slow.mp4?v=720p">Download RobotB stair ascent video (Slow motion · 0.4×)</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+          <article class="demo-pair">
+            <h4>RobotB 60 cm gap crossing</h4>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-b-gap-crossing.webp" aria-label="RobotB 60 cm gap crossing, Original · 1×">
+                  <source src="assets/video/robot-b-gap-crossing.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-b-gap-crossing.mp4?v=720p">Download RobotB 60 cm gap crossing video (Original · 1×)</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-b-gap-crossing.webp" aria-label="RobotB 60 cm gap crossing, Slow motion · 0.4×">
+                  <source src="assets/video/robot-b-gap-crossing-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-b-gap-crossing-slow.mp4?v=720p">Download RobotB 60 cm gap crossing video (Slow motion · 0.4×)</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+          <article class="demo-pair">
+            <h4>RobotB 30 cm platform climb</h4>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-b-platform-climb.webp" aria-label="RobotB 30 cm platform climb, Original · 1×">
+                  <source src="assets/video/robot-b-platform-climb.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-b-platform-climb.mp4?v=720p">Download RobotB 30 cm platform climb video (Original · 1×)</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-b-platform-climb.webp" aria-label="RobotB 30 cm platform climb, Slow motion · 0.4×">
+                  <source src="assets/video/robot-b-platform-climb-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-b-platform-climb-slow.mp4?v=720p">Download RobotB 30 cm platform climb video (Slow motion · 0.4×)</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+          <article class="demo-pair">
+            <h4>RobotB stair descent</h4>
+            <p>For safety, stair descent speed is limited to 2 m/s.</p>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-b-stair-descent.webp" aria-label="RobotB stair descent, Original · 1×">
+                  <source src="assets/video/robot-b-stair-descent.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-b-stair-descent.mp4?v=720p">Download RobotB stair descent video (Original · 1×)</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="580"
+                  poster="assets/images/robot-b-stair-descent.webp" aria-label="RobotB stair descent, Slow motion · 0.4×">
+                  <source src="assets/video/robot-b-stair-descent-slow.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/robot-b-stair-descent-slow.mp4?v=720p">Download RobotB stair descent video (Slow motion · 0.4×)</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="video-group" aria-labelledby="video-group-2">
+        <h3 id="video-group-2">Nighttime operation</h3>
+        <p>RobotA</p>
+        <div class="demo-grid">
+          <article class="demo-pair">
+            <h4>Night stair ascent</h4>
+            <p>Low light</p>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="720"
+                  poster="assets/images/night-stairs.webp" aria-label="Night stair ascent, Original · 1×">
+                  <source src="assets/video/night-stairs.mp4" type="video/mp4">
+                  <a href="assets/video/night-stairs.mp4">Download night stair ascent video</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="720"
+                  poster="assets/images/night-stairs.webp" aria-label="Night stair ascent, Slow motion · 0.4×">
+                  <source src="assets/video/night-stairs-slow.mp4" type="video/mp4">
+                  <a href="assets/video/night-stairs-slow.mp4">Download night stair ascent video</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+          <article class="demo-pair">
+            <h4>Night stair descent</h4>
+            <p>Low light</p>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="720"
+                  poster="assets/images/night-descent.webp" aria-label="Night stair descent, Original · 1×">
+                  <source src="assets/video/night-descent.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/night-descent.mp4?v=720p">Download night stair descent video</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="720"
+                  poster="assets/images/night-descent.webp" aria-label="Night stair descent, Slow motion · 0.4×">
+                  <source src="assets/video/night-descent-slow.mp4" type="video/mp4">
+                  <a href="assets/video/night-descent-slow.mp4">Download night stair descent video</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+          <article class="demo-pair">
+            <h4>Night gap crossing</h4>
+            <p>Low light</p>
+            <div class="comparison">
+              <figure class="demo">
+                <figcaption>Original · 1×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="720"
+                  poster="assets/images/night-gap.webp" aria-label="Night gap crossing, Original · 1×">
+                  <source src="assets/video/night-gap.mp4?v=720p" type="video/mp4">
+                  <a href="assets/video/night-gap.mp4?v=720p">Download night gap crossing video</a>
+                </video>
+              </figure>
+              <figure class="demo">
+                <figcaption>Slow motion · 0.4×</figcaption>
+                <video controls playsinline muted loop preload="none" width="1280" height="720"
+                  poster="assets/images/night-gap.webp" aria-label="Night gap crossing, Slow motion · 0.4×">
+                  <source src="assets/video/night-gap-slow.mp4" type="video/mp4">
+                  <a href="assets/video/night-gap-slow.mp4">Download night gap crossing video</a>
+                </video>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <section class="section wrap reward-section" id="training-rewards" aria-labelledby="training-rewards-title">
+      <div class="reading">
+        <h2 id="training-rewards-title">Training rewards</h2>
+        <p>The table lists 33 reward terms. The total reward per control step is <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi class="capital-greek">Δ</mi><mi>t</mi><munder><mo movablelimits="true">∑</mo><mi>i</mi></munder><msub><mi>w</mi><mi>i</mi></msub><msub><mi>r</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\Delta t\sum_i w_i r_i</annotation></semantics></math>, with <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi class="capital-greek">Δ</mi><mi>t</mi><mo>=</mo><mn>0.02</mn><mspace width="0.1667em"/><mi mathvariant="normal">s</mi></mrow><annotation encoding="application/x-tex">\Delta t=0.02\,\mathrm{s}</annotation></semantics></math>.</p>
+      </div>
+      <div class="reward-table-scroll" role="region" aria-label="Training reward formulas, weights, and notes" tabindex="0">
+        <table class="reward-table">
+          <caption>A reward term is zero outside the conditions listed in its notes.</caption>
+          <colgroup>
+            <col class="reward-id-column"><col class="reward-formula-column"><col class="reward-weight-column"><col class="reward-note-column">
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">Reward term</th><th scope="col">Formula <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>r</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">r_i</annotation></semantics></math></th>
+              <th scope="col" class="reward-weight">Weight</th>
+              <th scope="col">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="reward-group"><th scope="rowgroup" colspan="4">Task</th></tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Planar velocity tracking</span><code>track_lin_vel_xy</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>exp</mi><mo>⁡</mo><mspace width="-0.1667em"/><mrow><mo>(</mo><mo form="prefix">−</mo><mfrac><mrow><msubsup><mi>e</mi><mi>x</mi><mn>2</mn></msubsup><mo>+</mo><msubsup><mi>e</mi><mi>y</mi><mn>2</mn></msubsup></mrow><mn>0.25</mn></mfrac><mo>)</mo></mrow></mrow><annotation encoding="application/x-tex">\exp\!\left(-\frac{e_x^2+e_y^2}{0.25}\right)</annotation></semantics></math></td>
+              <td class="reward-weight">4</td>
+              <td class="reward-note"><p><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>e</mi><mi>x</mi></msub></mrow><annotation encoding="application/x-tex">e_x</annotation></semantics></math> and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>e</mi><mi>y</mi></msub></mrow><annotation encoding="application/x-tex">e_y</annotation></semantics></math> are the commanded minus measured forward and lateral velocities. On high-speed courses, the forward velocity is projected onto the local terrain tangent along the robot heading. The tangent speed is <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><msub><mi>v</mi><mo>∥</mo></msub><mo>+</mo><mi>a</mi><msub><mi>v</mi><mi>z</mi></msub></mrow><msqrt><mn>1</mn><mo>+</mo><msup><mi>a</mi><mn>2</mn></msup></msqrt></mfrac></mrow><annotation encoding="application/x-tex">\frac{v_\parallel+a v_z}{\sqrt{1+a^2}}</annotation></semantics></math>, where <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>v</mi><mo>∥</mo></msub></mrow><annotation encoding="application/x-tex">v_\parallel</annotation></semantics></math> is the horizontal velocity along the heading, <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>v</mi><mi>z</mi></msub></mrow><annotation encoding="application/x-tex">v_z</annotation></semantics></math> is the world-frame vertical velocity, and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math> is the local grade along the heading. The course grade comes from downward terrain rays. On other stairs, the same projection uses the stair geometry. In both cases the lateral velocity is the horizontal projection perpendicular to the heading. On other terrain, both components are measured in the body frame.</p><p>Outside stair-descent segments on high-speed courses, set <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>e</mi><mi>x</mi></msub><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">e_x=0</annotation></semantics></math> if the forward command exceeds 0.05 m/s and the tangent speed exceeds the command. During stair descent, forward overspeed contributes to the error.</p></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Yaw rate tracking</span><code>track_ang_vel_z</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>exp</mi><mo>⁡</mo><mspace width="-0.1667em"/><mrow><mo>(</mo><mo form="prefix">−</mo><mfrac><mrow><mo stretchy="false">(</mo><msub><mi>c</mi><mi>ω</mi></msub><mo>−</mo><msubsup><mi>ω</mi><mi>z</mi><mi>b</mi></msubsup><msup><mo stretchy="false">)</mo><mn>2</mn></msup></mrow><mn>0.25</mn></mfrac><mo>)</mo></mrow></mrow><annotation encoding="application/x-tex">\exp\!\left(-\frac{(c_\omega-\omega_z^b)^2}{0.25}\right)</annotation></semantics></math></td>
+              <td class="reward-weight">1.5</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>c</mi><mi>ω</mi></msub></mrow><annotation encoding="application/x-tex">c_\omega</annotation></semantics></math> is the commanded yaw rate and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>ω</mi><mi>z</mi><mi>b</mi></msubsup></mrow><annotation encoding="application/x-tex">\omega_z^b</annotation></semantics></math> is the measured body-frame Z-axis angular velocity. Both are in rad/s.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Forward body velocity</span><code>rear_forward_speed</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>max</mo><mo stretchy="false">(</mo><msubsup><mi>v</mi><mi>x</mi><mi>b</mi></msubsup><mo>,</mo><mn>0</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\max(v_x^b,0)</annotation></semantics></math></td>
+              <td class="reward-weight">0.1</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>v</mi><mi>x</mi><mi>b</mi></msubsup></mrow><annotation encoding="application/x-tex">v_x^b</annotation></semantics></math> is the body-frame X-axis velocity. This term is active on high-speed courses outside stair-descent segments when the forward command is positive.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Forward progress</span><code>forward_progress</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>60</mn><mo>max</mo><mo stretchy="false">(</mo><mi class="capital-greek">Δ</mi><mi>x</mi><mo>,</mo><mn>0</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">60\max(\Delta x,0)</annotation></semantics></math></td>
+              <td class="reward-weight">0.2</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi class="capital-greek">Δ</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">\Delta x</annotation></semantics></math> is the displacement in one control step along the course heading, fixed at 0 rad along the world +X axis. This term is active on high-speed courses outside stair-descent segments when the forward command exceeds 0.1 m/s.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Survival</span><code>alive</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mi>f</mi></mrow><annotation encoding="application/x-tex">1-f</annotation></semantics></math></td>
+              <td class="reward-weight">0.1</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi></mrow><annotation encoding="application/x-tex">f</annotation></semantics></math> is 1 when a failure causes termination in the current step and 0 otherwise. An episode ending only by timeout still earns this term.</td>
+            </tr>
+          </tbody>
+          <tbody>
+            <tr class="reward-group"><th scope="rowgroup" colspan="4">Safe and Soft</th></tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Failure termination</span><code>failure_termination</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mi>f</mi><mrow><mi class="capital-greek">Δ</mi><mi>t</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">\frac{f}{\Delta t}</annotation></semantics></math></td>
+              <td class="reward-weight">−1</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi></mrow><annotation encoding="application/x-tex">f</annotation></semantics></math> is 1 when a failure causes termination and 0 otherwise. The control step is <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi class="capital-greek">Δ</mi><mi>t</mi><mo>=</mo><mn>0.02</mn><mspace width="0.1667em"/><mi mathvariant="normal">s</mi></mrow><annotation encoding="application/x-tex">\Delta t=0.02\,\mathrm{s}</annotation></semantics></math>. After weighting and timestep scaling, each failure contributes −1. An episode ending only by timeout contributes 0.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Joint velocity</span><code>joint_vel</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mi>j</mi></munder><msup><munderover><mi>q</mi><mi>j</mi><mo stretchy="false">˙</mo></munderover><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\sum_j \dot q_j^2</annotation></semantics></math></td>
+              <td class="reward-weight">−0.0001</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munderover><mi>q</mi><mi>j</mi><mo stretchy="false">˙</mo></munderover></mrow><annotation encoding="application/x-tex">\dot q_j</annotation></semantics></math> is the angular velocity of joint <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math>, in rad/s.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Joint acceleration</span><code>joint_acc</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mi>j</mi></munder><msup><munderover><mi>q</mi><mi>j</mi><mo stretchy="false">¨</mo></munderover><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\sum_j \ddot q_j^2</annotation></semantics></math></td>
+              <td class="reward-weight">−1 × 10<sup>−7</sup></td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munderover><mi>q</mi><mi>j</mi><mo stretchy="false">¨</mo></munderover></mrow><annotation encoding="application/x-tex">\ddot q_j</annotation></semantics></math> is the angular acceleration of joint <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math>, in rad/s².</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Joint torque</span><code>joint_torques</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mi>j</mi></munder><msubsup><mi>τ</mi><mi>j</mi><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">\sum_j \tau_j^2</annotation></semantics></math></td>
+              <td class="reward-weight">−0.0002</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>τ</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\tau_j</annotation></semantics></math> is the torque applied to joint <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math>, in N·m.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">First action difference</span><code>action_rate</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mrow><mo>‖</mo><msub><mi>𝐚</mi><mi>t</mi></msub><mo>−</mo><msub><mi>𝐚</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>‖</mo></mrow><mn>2</mn><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">\left\lVert\mathbf a_t-\mathbf a_{t-1}\right\rVert_2^2</annotation></semantics></math></td>
+              <td class="reward-weight">−0.01</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐚</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">\mathbf a_t</annotation></semantics></math> and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐚</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub></mrow><annotation encoding="application/x-tex">\mathbf a_{t-1}</annotation></semantics></math> are the current and previous raw action vectors. The squared norm sums the squared changes across their components.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Second action difference</span><code>action_rate_2</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mrow><mo>‖</mo><msub><mi>𝐚</mi><mi>t</mi></msub><mo>−</mo><mn>2</mn><msub><mi>𝐚</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>+</mo><msub><mi>𝐚</mi><mrow><mi>t</mi><mo>−</mo><mn>2</mn></mrow></msub><mo>‖</mo></mrow><mn>2</mn><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">\left\lVert\mathbf a_t-2\mathbf a_{t-1}+\mathbf a_{t-2}\right\rVert_2^2</annotation></semantics></math></td>
+              <td class="reward-weight">−0.005</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐚</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">\mathbf a_t</annotation></semantics></math>, <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐚</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub></mrow><annotation encoding="application/x-tex">\mathbf a_{t-1}</annotation></semantics></math>, and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐚</mi><mrow><mi>t</mi><mo>−</mo><mn>2</mn></mrow></msub></mrow><annotation encoding="application/x-tex">\mathbf a_{t-2}</annotation></semantics></math> are the three most recent raw action vectors. The second difference measures how much the action change itself changes between steps.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Soft joint position limits</span><code>dof_pos_limits</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mi>j</mi></munder><mo>max</mo><mo stretchy="false">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>q</mi><mi>j</mi><mo>min</mo></msubsup><mo>−</mo><msub><mi>q</mi><mi>j</mi></msub><mo>,</mo><msub><mi>q</mi><mi>j</mi></msub><mo>−</mo><msubsup><mi>q</mi><mi>j</mi><mo>max</mo></msubsup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\sum_j\max(0,q_j^{\min}-q_j,q_j-q_j^{\max})</annotation></semantics></math></td>
+              <td class="reward-weight">−10</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>q</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">q_j</annotation></semantics></math> is the joint angle, and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>q</mi><mi>j</mi><mo>min</mo></msubsup></mrow><annotation encoding="application/x-tex">q_j^{\min}</annotation></semantics></math> and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>q</mi><mi>j</mi><mo>max</mo></msubsup></mrow><annotation encoding="application/x-tex">q_j^{\max}</annotation></semantics></math> are its soft limits. Each joint contributes the angle by which it exceeds either limit.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Foot slip</span><code>feet_slide</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mrow><mi>i</mi><mo>∈</mo><mi>𝒞</mi></mrow></munder><msub><mrow><mo>‖</mo><msub><mi>𝐯</mi><mrow><mi>i</mi><mo>,</mo><mi>x</mi><mi>y</mi></mrow></msub><mo>‖</mo></mrow><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">\sum_{i\in\mathcal C}\left\lVert\mathbf v_{i,xy}\right\rVert_2</annotation></semantics></math></td>
+              <td class="reward-weight">−0.25</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝒞</mi></mrow><annotation encoding="application/x-tex">\mathcal C</annotation></semantics></math> contains the feet whose peak contact force magnitude over the sensor history exceeds 1 N. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐯</mi><mrow><mi>i</mi><mo>,</mo><mi>x</mi><mi>y</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\mathbf v_{i,xy}</annotation></semantics></math> is the horizontal velocity of foot <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math> in the world frame.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Foot stumbling</span><code>stumble</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>𝟏</mn><mspace width="-0.1667em"/><mrow><mo>[</mo><mi>∃</mi><mspace width="0.1667em"/><mi>i</mi><mo>∶</mo><msub><mrow><mo>‖</mo><msub><mi>𝐅</mi><mrow><mi>i</mi><mo>,</mo><mi>x</mi><mi>y</mi></mrow></msub><mo>‖</mo></mrow><mn>2</mn></msub><mo>&gt;</mo><mn>4</mn><mo stretchy="false">|</mo><msub><mi>F</mi><mrow><mi>i</mi><mo>,</mo><mi>z</mi></mrow></msub><mo stretchy="false">|</mo><mo>]</mo></mrow></mrow><annotation encoding="application/x-tex">\mathbf{1}\!\left[\exists\,i:\left\lVert\mathbf F_{i,xy}\right\rVert_2&gt;4|F_{i,z}|\right]</annotation></semantics></math></td>
+              <td class="reward-weight">−0.25</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐅</mi><mrow><mi>i</mi><mo>,</mo><mi>x</mi><mi>y</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\mathbf F_{i,xy}</annotation></semantics></math> and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>F</mi><mrow><mi>i</mi><mo>,</mo><mi>z</mi></mrow></msub></mrow><annotation encoding="application/x-tex">F_{i,z}</annotation></semantics></math> are the horizontal contact force and its vertical component for foot <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math>. The indicator is 1 if any foot has a horizontal force magnitude greater than four times the absolute vertical force, and 0 otherwise.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Undesired body contacts</span><code>undesired_contacts</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mi>j</mi></munder><mn>𝟏</mn><mspace width="-0.1667em"/><mrow><mo>[</mo><msubsup><mi>F</mi><mi>j</mi><mi>peak</mi></msubsup><mo>&gt;</mo><mn>1</mn><mo>]</mo></mrow></mrow><annotation encoding="application/x-tex">\sum_j\mathbf{1}\!\left[F_j^{\mathrm{peak}}&gt;1\right]</annotation></semantics></math></td>
+              <td class="reward-weight">−5</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>F</mi><mi>j</mi><mi>peak</mi></msubsup></mrow><annotation encoding="application/x-tex">F_j^{\mathrm{peak}}</annotation></semantics></math> is the peak contact force magnitude for body <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math> over the sensor history, in N. Each hip, thigh, or calf body with a peak above 1 N contributes 1.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Foot contact force</span><code>feet_contact_force</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mi>i</mi></munder><mo>max</mo><mo stretchy="false">(</mo><msubsup><mi>F</mi><mi>i</mi><mi>peak</mi></msubsup><mo>−</mo><msub><mi>F</mi><mi>lim</mi></msub><mo>,</mo><mn>0</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\sum_i\max(F_i^{\mathrm{peak}}-F_{\mathrm{lim}},0)</annotation></semantics></math></td>
+              <td class="reward-weight">−0.01</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>F</mi><mi>i</mi><mi>peak</mi></msubsup></mrow><annotation encoding="application/x-tex">F_i^{\mathrm{peak}}</annotation></semantics></math> is the largest absolute vertical contact force on foot <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math> within the control step. The limit is <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>F</mi><mi>lim</mi></msub><mo>=</mo><mi mathvariant="normal">round</mi><mo>⁡</mo><mo stretchy="false">(</mo><mn>5</mn><mi>m</mi><mo stretchy="false">)</mo><mo>+</mo><mn>50</mn></mrow><annotation encoding="application/x-tex">F_{\mathrm{lim}}=\operatorname{round}(5m)+50</annotation></semantics></math> in N, with the robot mass <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math> entered in kg.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Touchdown impact speed</span><code>foot_impact_velocity</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mi>i</mi></munder><msubsup><mi>u</mi><mi>i</mi><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">\sum_i u_i^2</annotation></semantics></math></td>
+              <td class="reward-weight">−0.1</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>u</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">u_i</annotation></semantics></math> is the maximum downward speed of foot <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math> just before touchdown within the control step. A touchdown occurs when the absolute vertical force rises from at most 5 N to above 5 N. A foot with no touchdown contributes 0.</td>
+            </tr>
+          </tbody>
+          <tbody>
+            <tr class="reward-group"><th scope="rowgroup" colspan="4" lang="en">Stability, Coordination, and Naturalness</th></tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Body heading error</span><code>base_heading</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>e</mi><mi>ψ</mi><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">e_\psi^2</annotation></semantics></math></td>
+              <td class="reward-weight">−1</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>e</mi><mi>ψ</mi></msub></mrow><annotation encoding="application/x-tex">e_\psi</annotation></semantics></math> is the commanded heading minus the current heading, wrapped to <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mo form="prefix">−</mo><mi>π</mi><mo>,</mo><mi>π</mi><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[-\pi,\pi]</annotation></semantics></math>. The term is active when heading control is enabled and the translational command magnitude exceeds 0.1 m/s.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Planar drift during turns in place</span><code>in_place_turn_lin_vel_xy</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mrow><mo>‖</mo><msubsup><mi>𝐯</mi><mrow><mi>x</mi><mi>y</mi></mrow><mi>b</mi></msubsup><mo>‖</mo></mrow><mn>2</mn><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">\left\lVert\mathbf v_{xy}^b\right\rVert_2^2</annotation></semantics></math></td>
+              <td class="reward-weight">−1</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>𝐯</mi><mrow><mi>x</mi><mi>y</mi></mrow><mi>b</mi></msubsup></mrow><annotation encoding="application/x-tex">\mathbf v_{xy}^b</annotation></semantics></math> is the body-frame planar velocity. This term applies when the squared planar command magnitude is below 0.1 and the squared yaw rate command exceeds 0.1.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Body roll and pitch rates</span><code>base_angular_velocity</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mrow><mo>(</mo><msubsup><mi>ω</mi><mi>x</mi><mi>b</mi></msubsup><mo>)</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mo>(</mo><msubsup><mi>ω</mi><mi>y</mi><mi>b</mi></msubsup><mo>)</mo></mrow><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\left(\omega_x^b\right)^2+\left(\omega_y^b\right)^2</annotation></semantics></math></td>
+              <td class="reward-weight">−0.05</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>ω</mi><mi>x</mi><mi>b</mi></msubsup></mrow><annotation encoding="application/x-tex">\omega_x^b</annotation></semantics></math> and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>ω</mi><mi>y</mi><mi>b</mi></msubsup></mrow><annotation encoding="application/x-tex">\omega_y^b</annotation></semantics></math> are the angular rates about the body-frame X and Y axes.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Body vertical velocity</span><code>base_linear_velocity</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo rspace="0.17em">{</mo><mtable columnalign="left" class="cases"><mtr><mtd><mn>0.5</mn><mspace width="0.1667em"/><msubsup><mi>e</mi><mi>z</mi><mn>2</mn></msubsup></mtd><mtd><mtext>High-speed descent</mtext></mtd></mtr><mtr><mtd><mn>0.1</mn><mspace width="0.1667em"/><msubsup><mi>e</mi><mi>z</mi><mn>2</mn></msubsup></mtd><mtd><mtext>Other high-speed segments</mtext></mtd></mtr><mtr><mtd><mo stretchy="false">(</mo><msubsup><mi>v</mi><mi>z</mi><mi>b</mi></msubsup><msup><mo stretchy="false">)</mo><mn>2</mn></msup></mtd><mtd><mtext>Otherwise</mtext></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">\begin{cases}0.5\,e_z^2 &amp; \text{High-speed descent}\\0.1\,e_z^2 &amp; \text{Other high-speed segments}\\(v_z^b)^2 &amp; \text{Otherwise}\end{cases}</annotation></semantics></math></td>
+              <td class="reward-weight">−2</td>
+              <td class="reward-note">On high-speed courses, <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>e</mi><mi>z</mi></msub><mo>=</mo><mo>max</mo><mspace width="-0.1667em"/><mrow><mo>(</mo><mrow><mo>|</mo><msubsup><mi>v</mi><mi>z</mi><mi>w</mi></msubsup><mo>−</mo><msub><mi>a</mi><mi>x</mi></msub><msubsup><mi>v</mi><mi>x</mi><mi>w</mi></msubsup><mo>|</mo></mrow><mo>−</mo><mn>0.15,0</mn><mo>)</mo></mrow></mrow><annotation encoding="application/x-tex">e_z=\max\!\left(\left|v_z^w-a_xv_x^w\right|-0.15,0\right)</annotation></semantics></math>. Here <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>v</mi><mi>x</mi><mi>w</mi></msubsup></mrow><annotation encoding="application/x-tex">v_x^w</annotation></semantics></math> and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>v</mi><mi>z</mi><mi>w</mi></msubsup></mrow><annotation encoding="application/x-tex">v_z^w</annotation></semantics></math> are world-frame velocities and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>a</mi><mi>x</mi></msub></mrow><annotation encoding="application/x-tex">a_x</annotation></semantics></math> is the terrain grade along the world X axis. The expected vertical velocity along the terrain is <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>a</mi><mi>x</mi></msub><msubsup><mi>v</mi><mi>x</mi><mi>w</mi></msubsup></mrow><annotation encoding="application/x-tex">a_xv_x^w</annotation></semantics></math>, and only the error beyond 0.15 m/s contributes. For other environments, <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>v</mi><mi>z</mi><mi>b</mi></msubsup></mrow><annotation encoding="application/x-tex">v_z^b</annotation></semantics></math> is the body-frame vertical velocity.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Body tilt</span><code>flat_orientation_l2</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><msubsup><mi>g</mi><mi>x</mi><mn>2</mn></msubsup><mo>+</mo><msubsup><mi>g</mi><mi>y</mi><mn>2</mn></msubsup></mrow><mrow><mi>exp</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>ℓ</mi><mo stretchy="false">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">\frac{g_x^2+g_y^2}{\exp(\ell)}</annotation></semantics></math></td>
+              <td class="reward-weight">−20</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>x</mi></msub></mrow><annotation encoding="application/x-tex">g_x</annotation></semantics></math> and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>g</mi><mi>y</mi></msub></mrow><annotation encoding="application/x-tex">g_y</annotation></semantics></math> are the components of the unit gravity vector along the body-frame X and Y axes. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ℓ</mi></mrow><annotation encoding="application/x-tex">\ell</annotation></semantics></math> is the terrain difficulty. Flat terrain uses the lowest level, <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ℓ</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\ell=0</annotation></semantics></math>. The table weight includes the original scale factor.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Default joint posture</span><code>joint_pos</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>exp</mi><mo>⁡</mo><mspace width="-0.1667em"/><mrow><mo>(</mo><mo form="prefix">−</mo><munder><mo movablelimits="true">∑</mo><mi>j</mi></munder><mo stretchy="false">(</mo><msub><mi>s</mi><mi>j</mi></msub><mi>δ</mi><msub><mi>q</mi><mi>j</mi></msub><msup><mo stretchy="false">)</mo><mn>2</mn></msup><mo>)</mo></mrow></mrow><annotation encoding="application/x-tex">\exp\!\left(-\sum_j (s_j\delta q_j)^2\right)</annotation></semantics></math></td>
+              <td class="reward-weight">0.1</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>δ</mi><msub><mi>q</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\delta q_j</annotation></semantics></math> is the angle of joint <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math> relative to its default angle. The scale <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>s</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">s_j</annotation></semantics></math> is 3 for hip joints and 0.5 for all other joints.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Joint posture at a standstill</span><code>stand_still</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mi>j</mi></munder><mo stretchy="false">|</mo><mi>δ</mi><msub><mi>q</mi><mi>j</mi></msub><mo stretchy="false">|</mo></mrow><annotation encoding="application/x-tex">\sum_j|\delta q_j|</annotation></semantics></math></td>
+              <td class="reward-weight">−1</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>δ</mi><msub><mi>q</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\delta q_j</annotation></semantics></math> is the angle of joint <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math> relative to its default angle. The term is active when the translational command magnitude is below 0.15 m/s.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Hip-weighted posture deviation</span><code>hip_pos</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mi>j</mi></munder><mo stretchy="false">(</mo><msub><mi>s</mi><mi>j</mi></msub><mi>δ</mi><msub><mi>q</mi><mi>j</mi></msub><msup><mo stretchy="false">)</mo><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\sum_j(s_j\delta q_j)^2</annotation></semantics></math></td>
+              <td class="reward-weight">−0.1</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>δ</mi><msub><mi>q</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">\delta q_j</annotation></semantics></math> is the angle of joint <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math> relative to its default angle. The scale <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>s</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">s_j</annotation></semantics></math> is 3 for hip joints and 0.5 for all other joints.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Swing duration</span><code>feet_air_time</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mrow><mi>i</mi><mo>∈</mo><mi>ℒ</mi></mrow></munder><mo stretchy="false">(</mo><msub><mi>T</mi><mi>i</mi></msub><mo>−</mo><mn>0.5</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\sum_{i\in\mathcal L}(T_i-0.5)</annotation></semantics></math></td>
+              <td class="reward-weight">4</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ℒ</mi></mrow><annotation encoding="application/x-tex">\mathcal L</annotation></semantics></math> is the set of feet that touch down in this step. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">T_i</annotation></semantics></math> is the swing time that ended at touchdown, in seconds. The norm of the forward, lateral, and yaw commands must exceed 0.1. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi></mrow><annotation encoding="application/x-tex">F</annotation></semantics></math> denotes flat terrain, including level parts of a continuous course, and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi></mrow><annotation encoding="application/x-tex">D</annotation></semantics></math> denotes stair descent. The reward is disabled on flat terrain and during stair descent.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Swing duration under a yaw command</span><code>feet_air_time_ang_z</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mrow><mi>i</mi><mo>∈</mo><mi>ℒ</mi></mrow></munder><mo stretchy="false">(</mo><msub><mi>T</mi><mi>i</mi></msub><mo>−</mo><mn>0.5</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\sum_{i\in\mathcal L}(T_i-0.5)</annotation></semantics></math></td>
+              <td class="reward-weight">4</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ℒ</mi></mrow><annotation encoding="application/x-tex">\mathcal L</annotation></semantics></math> is the set of feet that touch down in this step. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>T</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">T_i</annotation></semantics></math> is the swing time that ended at touchdown, in seconds. The absolute yaw rate command must exceed 0.1 rad/s. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi></mrow><annotation encoding="application/x-tex">F</annotation></semantics></math> denotes flat terrain, including level parts of a continuous course, and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi></mrow><annotation encoding="application/x-tex">D</annotation></semantics></math> denotes stair descent. The reward is disabled on flat terrain and during stair descent.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Diagonal trot coordination</span><code>trot_phase</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi><mo stretchy="false">(</mo><msub><mi>E</mi><mi>C</mi></msub><mo>+</mo><msub><mi>E</mi><mi>q</mi></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">s(E_C+E_q)</annotation></semantics></math></td>
+              <td class="reward-weight">−0.2</td>
+              <td class="reward-note">The diagonal pairs are front-left with rear-right and front-right with rear-left. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>C</mi></msub></mrow><annotation encoding="application/x-tex">E_C</annotation></semantics></math> measures contact mismatch and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>q</mi></msub></mrow><annotation encoding="application/x-tex">E_q</annotation></semantics></math> measures joint angle mismatch within each pair. The command-dependent scale <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi></mrow><annotation encoding="application/x-tex">s</annotation></semantics></math> is multiplied by 4 during stair descent. The term is disabled when the terrain name contains <code>gap</code> or <code>hurdle</code>.<details><summary>Calculation details</summary><p>A foot is in contact when its vertical force exceeds 0.1 N. Each pair with mismatched contact states contributes 2. The joint angle term sums squared differences between corresponding thigh and calf joints within each pair. The command-dependent scale is the absolute forward command divided by the norm of the lateral and yaw commands plus 0.001. Clip that ratio to [0.01, 1] and multiply by 0.2.</p></details></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Insufficient support during stair descent</span><code>downhill_support</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><msub><mi>N</mi><mn>0</mn></msub><mo>+</mo><mn>0.25</mn><msub><mi>N</mi><mn>1</mn></msub></mrow><mi>N</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{N_0+0.25N_1}{N}</annotation></semantics></math></td>
+              <td class="reward-weight">−2</td>
+              <td class="reward-note">This term applies on stair-descent segments when the body-frame Z component of normalized gravity is below −0.5 and at least 0.2 s has elapsed in the episode. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math> is the number of physics substeps per control step. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">N_0</annotation></semantics></math> and <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">N_1</annotation></semantics></math> count substeps with zero and one supporting foot, respectively. A foot counts as supporting when its absolute vertical contact force exceeds 5 N.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Fore–hind bounding penalty</span><code>feet_bound</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><msub><mi>N</mi><mi>bound</mi></msub><mi>N</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{N_{\mathrm{bound}}}{N}</annotation></semantics></math></td>
+              <td class="reward-weight">−1</td>
+              <td class="reward-note">This term applies on stair-descent segments and flat ground, including level course segments, when the body-frame Z component of normalized gravity is below −0.5 and at least 0.2 s has elapsed in the episode. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math> is the number of physics substeps. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mi>bound</mi></msub></mrow><annotation encoding="application/x-tex">N_{\mathrm{bound}}</annotation></semantics></math> counts substeps supported by exactly the two forefeet or exactly the two hind feet. A foot counts as supporting when its absolute vertical contact force exceeds 5 N.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Insufficient forward foothold reach</span><code>short_foothold_distance</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><munder><mo movablelimits="true">∑</mo><mrow><mi>i</mi><mo>∈</mo><mi>ℒ</mi></mrow></munder><mrow><mo>(</mo><mn>5</mn><mspace width="0.1667em"/><mn>𝟏</mn><mo stretchy="false">[</mo><msub><mi>d</mi><mi>i</mi></msub><mo>&lt;</mo><mn>0.20</mn><mo stretchy="false">]</mo><mo>+</mo><msub><mi>u</mi><mi>i</mi></msub><mo>)</mo></mrow></mrow><annotation encoding="application/x-tex">\sum_{i\in\mathcal L}\left(5\,\mathbf{1}[d_i&lt;0.20]+u_i\right)</annotation></semantics></math></td>
+              <td class="reward-weight">−4</td>
+              <td class="reward-note">Active only on stair-descent segments when forward body speed exceeds 0.20 m/s. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ℒ</mi></mrow><annotation encoding="application/x-tex">\mathcal L</annotation></semantics></math> contains the feet whose vertical contact force first exceeds 6 N in the current stance and whose paired foot has a recorded touchdown. A foot can trigger again once its vertical force drops to 5 N or below. The left and right forefeet form one pair, and the left and right hind feet form the other. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">d_i</annotation></semantics></math> is the heading-aligned distance in meters from the paired foot’s previous touchdown to the current foot. A reach below 0.20 m contributes 5 plus the relative shortfall <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>u</mi><mi>i</mi></msub><mo>=</mo><mo>min</mo><mo stretchy="false">(</mo><mn>1</mn><mo>,</mo><mo>max</mo><mo stretchy="false">(</mo><mn>0,1</mn><mo>−</mo><msub><mi>d</mi><mi>i</mi></msub><mo stretchy="false">/</mo><mn>0.20</mn><mo stretchy="false">)</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">u_i=\min(1,\max(0,1-d_i/0.20))</annotation></semantics></math>.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Forward foot collision</span><code>foot_front_collision</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><msub><mi>N</mi><mi>near</mi></msub><msub><mi>N</mi><mi>rays</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">\frac{N_{\mathrm{near}}}{N_{\mathrm{rays}}}</annotation></semantics></math></td>
+              <td class="reward-weight">−16</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mi>rays</mi></msub></mrow><annotation encoding="application/x-tex">N_{\mathrm{rays}}</annotation></semantics></math> is the total number of forward foot probe rays. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>N</mi><mi>near</mi></msub></mrow><annotation encoding="application/x-tex">N_{\mathrm{near}}</annotation></semantics></math> counts valid hits at a distance of 0.05 m or less. The reward is disabled during stair descent.</td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="reward-label">Insufficient footpad support</span><code>foot_pad_support</code></th>
+              <td class="reward-formula"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>1</mn><mrow><mo stretchy="false">|</mo><mi>𝒞</mi><mo stretchy="false">|</mo></mrow></mfrac><munder><mo movablelimits="true">∑</mo><mrow><mi>i</mi><mo>∈</mo><mi>𝒞</mi></mrow></munder><msub><mi>U</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\frac{1}{|\mathcal C|}\sum_{i\in\mathcal C}U_i</annotation></semantics></math></td>
+              <td class="reward-weight">−8</td>
+              <td class="reward-note"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝒞</mi></mrow><annotation encoding="application/x-tex">\mathcal C</annotation></semantics></math> contains feet with an absolute vertical contact force above 1 N. The term is zero if no foot is in contact. <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>U</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">U_i</annotation></semantics></math> is the fraction of the foot’s 5×5 probes that miss the ground or hit at a height more than 0.05 m from the sole. Probe spacing is 0.025 m, and the sole is 0.02 m below the foot position. The reward is disabled during stair descent.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const siteHeader = document.querySelector('.site-header');
+    const updateHeaderVisibility = () => {
+      siteHeader.hidden = window.scrollY <= 0;
+    };
+    window.addEventListener('scroll', updateHeaderVisibility, { passive: true });
+    window.addEventListener('pageshow', updateHeaderVisibility);
+    updateHeaderVisibility();
+
+    const videos = document.querySelectorAll('#title-video, #demos .demo video');
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    const visibleVideos = new Set();
+    const playVideo = (video) => video.play().catch(() => {});
+    const updatePlayback = (video) => {
+      if (visibleVideos.has(video) && !document.hidden && !reducedMotion.matches) {
+        if (video.paused) playVideo(video);
+      } else {
+        video.pause();
+      }
+    };
+    const updateVisibleVideos = () => visibleVideos.forEach(updatePlayback);
+    reducedMotion.addEventListener('change', updateVisibleVideos);
+    document.addEventListener('visibilitychange', updateVisibleVideos);
+
+    const loadNearbyVideos = typeof IntersectionObserver === 'function' ? new IntersectionObserver((entries, observer) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.preload = 'auto';
+        observer.unobserve(entry.target);
+      }
+    }, { rootMargin: '240px 0px' }) : null;
+    const observePlayback = loadNearbyVideos ? new IntersectionObserver((entries) => {
+      for (const { target, isIntersecting, intersectionRatio } of entries) {
+        if (isIntersecting && intersectionRatio >= 0.15) visibleVideos.add(target);
+        else visibleVideos.delete(target);
+        updatePlayback(target);
+      }
+    }, { threshold: 0.15 }) : null;
+
+    videos.forEach((video) => {
+      video.controls = false;
+      video.tabIndex = 0;
+      video.setAttribute('role', 'button');
+      video.setAttribute('aria-label', 'Play from the start: ' + video.getAttribute('aria-label'));
+
+      const replay = () => {
+        video.currentTime = 0;
+        playVideo(video);
+      };
+
+      video.addEventListener('click', replay);
+      video.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          if (!event.repeat) replay();
+        }
+      });
+
+      if (loadNearbyVideos) {
+        loadNearbyVideos.observe(video);
+        observePlayback.observe(video);
+      } else {
+        video.preload = 'auto';
+        visibleVideos.add(video);
+        updatePlayback(video);
+      }
+    });
+
+    const simulationStatus = document.querySelector('[data-status]');
+    if (location.protocol === 'file:') {
+      document.querySelector('[data-play]').disabled = true;
+      document.querySelector('[data-placeholder] p').textContent = 'A local HTTP server is required to run the simulation.';
+      simulationStatus.textContent = 'Open this page through a local HTTP server to run the simulation.';
+    } else {
+      import('./simulation/demo.mjs').catch((error) => {
+        document.querySelector('[data-play]').disabled = true;
+        simulationStatus.textContent = 'The simulation controls could not load.';
+        console.error(error);
+      });
+    }
+  </script>
+</body>
+</html>
